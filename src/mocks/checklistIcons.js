@@ -34,4 +34,8 @@ export const CATEGORY_ICON_MAP = {
   documents: 'document',
   booking: 'airplane',
   electronics: 'pencil',
+  clothing: 'bulb',
+  packing: 'document',
+  health: 'warning',
+  activity: 'bar',
 }

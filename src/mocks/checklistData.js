@@ -11,11 +11,15 @@ export const TRIP_INFO = {
   dDay: 7,
 }
 
-/** 체크리스트 카테고리 */
+/** 체크리스트 카테고리 (TripSearchPage 저장 항목 category id와 동일) */
 export const CATEGORIES = [
   { id: 'documents', label: '필수 서류' },
-  { id: 'electronics', label: '전자기기' },
-  { id: 'booking', label: '예약 내역' },
+  { id: 'electronics', label: '전자 기기' },
+  { id: 'clothing', label: '의류 · 신발' },
+  { id: 'packing', label: '세면 · 위생' },
+  { id: 'health', label: '건강 · 약' },
+  { id: 'activity', label: '액티비티' },
+  { id: 'booking', label: '예약 · 교통' },
 ]
 
 /** 체크리스트 초기 아이템 */

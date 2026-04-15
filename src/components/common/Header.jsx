@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 const NAV_ITEMS = [
-  { label: 'Dashboard',    path: '/trips',     match: (p) => p === '/trips' },
-  { label: 'Destinations', path: '/trips/new', match: (p) => p === '/trips/new' },
+  { label: 'Home',         path: '/',          match: (p) => p === '/' },
+  { label: 'Destinations', path: '/trips/new/step2', match: (p) => p.startsWith('/trips/new') },
   { label: 'Checklist',    path: '/trips/1/checklist', match: (p) => p.includes('/checklist') },
 ]
 

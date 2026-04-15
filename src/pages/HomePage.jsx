@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { IMAGES } from '@/images/constants'
-import WeatherOverlayCard from '@/images/WeatherOverlayCard'
 import { FEATURE_CARDS, FOOTER_SECTIONS, FOOTER_BOTTOM_LINKS } from '@/mocks/homeData'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
 
@@ -167,13 +166,6 @@ function HomePage() {
           ))}
         </div>
 
-        {/* 이미지 위 오버레이 카드 */}
-        <div className="absolute top-0 right-0 w-[55%] h-full pointer-events-none">
-          <div className="relative w-full h-full pointer-events-auto">
-            <WeatherOverlayCard />
-          </div>
-        </div>
-
         {/* 왼쪽: 텍스트 콘텐츠 */}
         <div className="relative z-10 mx-auto max-w-6xl px-6 py-20">
           <div className="max-w-md">
@@ -231,7 +223,7 @@ function HomePage() {
         <div className="md:hidden flex items-center justify-between px-5 pb-3 pt-1">
           <h2 className="text-base font-bold text-gray-900">준비 루틴을 시작할까요?</h2>
           <button
-            onClick={() => navigate('/trips')}
+            onClick={() => navigate('/trips/new/step2')}
             className="text-cyan-500 text-sm font-medium"
           >
             See All

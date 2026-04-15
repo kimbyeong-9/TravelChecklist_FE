@@ -472,8 +472,9 @@ function TripNewStep4Page() {
 
   const handleNext = () => {
     if (!canProceed) return
-    navigate('/trips/1/loading', {
+    navigate('/trips/new/step5', {
       state: {
+        ...location.state,
         step4: {
           arrival,
           tripStart: tripWindow?.tripStart,
@@ -500,8 +501,6 @@ function TripNewStep4Page() {
       },
     })
   }
-
-  const handleSkip = () => navigate('/trips/1/loading')
 
   const headerSubtitle = (
     <>
@@ -591,14 +590,7 @@ function TripNewStep4Page() {
             )}
           </div>
 
-          <div className="flex items-center justify-between mt-6">
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="text-sm font-semibold text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              건너뛰기
-            </button>
+          <div className="flex items-center justify-end mt-6">
             <button
               type="button"
               onClick={handleNext}
@@ -716,13 +708,6 @@ function TripNewStep4Page() {
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
             </svg>
-          </button>
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="w-full mt-2 text-sm font-semibold text-gray-400 hover:text-gray-600 py-2 transition-colors"
-          >
-            건너뛰기
           </button>
         </div>
       </div>

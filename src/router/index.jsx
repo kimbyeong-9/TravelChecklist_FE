@@ -3,13 +3,14 @@ import { useRoutes, Navigate } from 'react-router-dom'
 import RootLayout from '@/layouts/RootLayout'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
-import TripListPage from '@/pages/TripListPage'
-import TripNewPage from '@/pages/TripNewPage'
 import TripNewStep2Page from '@/pages/TripNewStep2Page'
 import TripNewStep3Page from '@/pages/TripNewStep3Page'
 import TripNewStep4Page from '@/pages/TripNewStep4Page'
+import TripNewStep5Page from '@/pages/TripNewStep5Page'
 import TripLoadingPage from '@/pages/TripLoadingPage'
 import TripSearchPage from '@/pages/TripSearchPage'
+import TripGuideArchivePage from '@/pages/TripGuideArchivePage'
+import TripGuideArchiveDetailPage from '@/pages/TripGuideArchiveDetailPage'
 import TripChecklistPage from '@/pages/TripChecklistPage'
 import NotFoundPage from '@/pages/NotFoundPage'
 import ErrorPage from '@/pages/ErrorPage'
@@ -20,9 +21,10 @@ import ErrorPage from '@/pages/ErrorPage'
  * 페이지 구조:
  *   /                       홈 / 랜딩
  *   /login                  로그인 · 회원가입
- *   /trips                  내 여행 목록          (Travel Fixed 관리)
- *   /trips/new              새 여행 만들기         (준비 시작 진입 구조 - DRD-3)
+ *   /trips/new              → /trips/new/step2 리다이렉트 (TripNewPage 제거)
+ *   /trips/new/step2~       새 여행 플로우
  *   /trips/:id/search       준비 항목 탐색         (Store Loop - DRD-1)
+ *   /trips/:id/guide-archive 저장 가이드 목록
  *   /trips/:id/checklist    내 체크리스트          (Confirm Loop - DRD-2)
  *   *                       404 NotFound
  *
@@ -43,13 +45,15 @@ const AppRoutes = () => {
       children: [
         { path: '/',                    element: <HomePage /> },
         { path: '/login',               element: <LoginPage /> },
-        { path: '/trips',               element: <TripListPage /> },
-        { path: '/trips/new',           element: <TripNewPage /> },
+        { path: '/trips/new',           element: <Navigate to="/trips/new/step2" replace /> },
         { path: '/trips/new/step2',     element: <TripNewStep2Page /> },
         { path: '/trips/new/step3',     element: <TripNewStep3Page /> },
         { path: '/trips/new/step4',     element: <TripNewStep4Page /> },
-        { path: '/trips/:id/search',    element: <TripSearchPage /> },
-        { path: '/trips/:id/checklist', element: <TripChecklistPage /> },
+        { path: '/trips/new/step5',     element: <TripNewStep5Page /> },
+        { path: '/trips/:id/search',                  element: <TripSearchPage /> },
+        { path: '/trips/:id/guide-archive/:entryId',  element: <TripGuideArchiveDetailPage /> },
+        { path: '/trips/:id/guide-archive',           element: <TripGuideArchivePage /> },
+        { path: '/trips/:id/checklist',     element: <TripChecklistPage /> },
         { path: '/404',                 element: <NotFoundPage /> },
       ],
     },

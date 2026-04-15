@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { TRIP_INFO, CATEGORIES, INITIAL_ITEMS } from '@/mocks/checklistData'
+import { mergeWithInitialChecklist, removeSavedItem, loadSavedItems } from '@/utils/savedTripItems'
 import { ICON_PATHS, CATEGORY_ICON_MAP } from '@/mocks/checklistIcons'
 import { SIDEBAR_STATS, WEATHER_RECOMMENDED_ITEMS } from '@/mocks/checklistSidebar'
 import { IMAGES } from '@/images/constants'
@@ -25,20 +26,21 @@ function SvgIcon({ name, className = 'w-4 h-4' }) {
 /* ─────────────────────────────────────────────
    메인 컴포넌트
 ───────────────────────────────────────────── */
-function TripChecklistPage() {
-  const { id } = useParams()
+function TripChecklistInner({ tripId }) {
   const navigate = useNavigate()
-  const [items, setItems] = useState(INITIAL_ITEMS)
+  const [items, setItems] = useState(() => mergeWithInitialChecklist(tripId, INITIAL_ITEMS))
   const [newItemText, setNewItemText] = useState('')
   const [hasEdited, setHasEdited] = useState(false)
 
   useEffect(() => {
-    trackEvent('saved_list_open', { trip_id: id })
-  }, [id])
+    trackEvent('saved_list_open', { trip_id: tripId })
+  }, [tripId])
+
+  const savedFromSearchCount = loadSavedItems(tripId).length
 
   const triggerEditStart = () => {
     if (!hasEdited) {
-      trackEvent('edit_start', { trip_id: id })
+      trackEvent('edit_start', { trip_id: tripId })
       setHasEdited(true)
     }
   }
@@ -48,14 +50,15 @@ function TripChecklistPage() {
     const target = items.find((i) => i.id === itemId)
     const nextChecked = !target?.checked
     setItems((prev) => prev.map((i) => i.id === itemId ? { ...i, checked: !i.checked } : i))
-    if (nextChecked) trackEvent('prepare_action', { trip_id: id, item_id: itemId, item_category: target?.category })
+    if (nextChecked) trackEvent('prepare_action', { trip_id: tripId, item_id: itemId, item_category: target?.category })
   }
 
   const handleDelete = (itemId) => {
     triggerEditStart()
     const target = items.find((i) => i.id === itemId)
+    removeSavedItem(tripId, itemId)
     setItems((prev) => prev.filter((i) => i.id !== itemId))
-    trackEvent('edit_del', { trip_id: id, item_id: itemId, item_category: target?.category })
+    trackEvent('edit_del', { trip_id: tripId, item_id: itemId, item_category: target?.category })
   }
 
   const handleAddItem = (e) => {
@@ -65,12 +68,12 @@ function TripChecklistPage() {
     const newItem = { id: Date.now(), category: 'documents', title: newItemText.trim(), subtitle: '', checked: false }
     setItems((prev) => [...prev, newItem])
     setNewItemText('')
-    trackEvent('edit_add', { trip_id: id, item_title: newItem.title })
+    trackEvent('edit_add', { trip_id: tripId, item_title: newItem.title })
   }
 
   const handleBackflow = () => {
-    trackEvent('re_store_trigger', { trip_id: id, checked_count: items.filter((i) => i.checked).length })
-    navigate(`/trips/${id}/search`)
+    trackEvent('re_store_trigger', { trip_id: tripId, checked_count: items.filter((i) => i.checked).length })
+    navigate(`/trips/${tripId}/search`)
   }
 
   const checkedCount = items.filter((i) => i.checked).length
@@ -90,9 +93,15 @@ function TripChecklistPage() {
 
           {/* 헤딩 */}
           <h1 className="text-4xl font-extrabold text-gray-900 mb-2">{TRIP_INFO.title}</h1>
-          <p className="text-sm text-gray-500 mb-8">
+          <p className="text-sm text-gray-500 mb-4">
             완벽한 여행을 위한 체계적인 준비. 현재 진행 상황을 확인하고 필수 항목을 점검하세요.
           </p>
+          {savedFromSearchCount > 0 && (
+            <div className="mb-8 rounded-2xl bg-teal-50 border border-teal-100 px-5 py-3 text-sm text-teal-900">
+              준비 탐색에서 저장한 항목 <strong className="tabular-nums">{savedFromSearchCount}개</strong>가 아래 목록에
+              포함되어 있습니다.
+            </div>
+          )}
 
           {/* 날씨 알림 카드 */}
           <div className="bg-white rounded-2xl overflow-hidden shadow-sm mb-8">
@@ -192,7 +201,7 @@ function TripChecklistPage() {
               </div>
             ))}
             <button
-              onClick={() => navigate('/trips')}
+              onClick={() => navigate('/')}
               className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold text-sm py-3 rounded-xl transition-colors"
             >
               지금 저장하고 나중에 확인하기
@@ -257,7 +266,12 @@ function TripChecklistPage() {
         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden mb-2">
           <div className="h-full bg-cyan-500 rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
-        <p className="text-xs text-gray-400 mb-6">완벽한 여행가지 단 몇 걸음 남았습니다.</p>
+        <p className="text-xs text-gray-400 mb-4">완벽한 여행가지 단 몇 걸음 남았습니다.</p>
+        {savedFromSearchCount > 0 && (
+          <div className="mb-6 rounded-2xl bg-teal-50 border border-teal-100 px-4 py-3 text-xs text-teal-900 leading-relaxed">
+            탐색에서 저장한 항목 <strong>{savedFromSearchCount}개</strong>가 목록에 반영되었습니다.
+          </div>
+        )}
 
         {/* 카테고리별 체크리스트 */}
         {CATEGORIES.map((cat) => {
@@ -323,7 +337,7 @@ function TripChecklistPage() {
       {/* 모바일 고정 하단 CTA */}
       <div className="md:hidden fixed bottom-16 left-0 right-0 z-40">
         <button
-          onClick={() => navigate('/trips')}
+          onClick={() => navigate('/')}
           className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold text-base py-4 transition-colors flex items-center justify-center gap-2"
         >
           완벽하게 준비되었습니다
@@ -400,11 +414,17 @@ function MobileChecklistItem({ item, category, onCheck }) {
 
       {!item.checked && (
         <span className="text-gray-300 flex-shrink-0">
-          <SvgIcon name={CATEGORY_ICON_MAP[category]} />
+          <SvgIcon name={CATEGORY_ICON_MAP[category] ?? 'document'} />
         </span>
       )}
     </button>
   )
+}
+
+function TripChecklistPage() {
+  const { id } = useParams()
+  const location = useLocation()
+  return <TripChecklistInner key={`${id}-${location.key}`} tripId={id} />
 }
 
 export default TripChecklistPage

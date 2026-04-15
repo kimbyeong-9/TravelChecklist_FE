@@ -13,7 +13,7 @@ function LoginPage() {
   const handleLogin = (e) => {
     e.preventDefault()
     // TODO: Supabase Auth 연동 후 실제 로그인 처리
-    navigate('/trips')
+    navigate('/')
   }
 
   return (

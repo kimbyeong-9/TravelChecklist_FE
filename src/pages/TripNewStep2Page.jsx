@@ -43,7 +43,7 @@ function TripNewStep2Page() {
 
           {/* 뒤로가기 버튼 */}
           <div className="flex justify-end mb-4">
-            <BackButton to="/trips/new" />
+            <BackButton to="/" />
           </div>
 
           <StepHeader
@@ -116,7 +116,7 @@ function TripNewStep2Page() {
         {/* 모바일 상단 바 */}
         <div className="flex items-center justify-between px-5 py-4 bg-white/80">
           <span className="font-bold text-gray-900">Travel Plans</span>
-          <BackButton to="/trips/new" />
+          <BackButton to="/" />
         </div>
 
         <div className="px-5 pt-4 pb-32">
