@@ -5,6 +5,7 @@ import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
 import TripListPage from '@/pages/TripListPage'
 import TripNewPage from '@/pages/TripNewPage'
+import TripLoadingPage from '@/pages/TripLoadingPage'
 import TripSearchPage from '@/pages/TripSearchPage'
 import TripChecklistPage from '@/pages/TripChecklistPage'
 import NotFoundPage from '@/pages/NotFoundPage'
@@ -46,6 +47,9 @@ const AppRoutes = () => {
         { path: '/404',                 element: <NotFoundPage /> },
       ],
     },
+
+    // 로딩 페이지 - Header/Footer 없는 독립 풀스크린 (RootLayout 미적용)
+    { path: '/trips/:id/loading', element: <TripLoadingPage /> },
 
     // Fallback - 정의되지 않은 URL → 404 페이지로 이동
     {
