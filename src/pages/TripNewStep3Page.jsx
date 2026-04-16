@@ -11,8 +11,8 @@ import {
 } from '@/mocks/tripNewStep3Data'
 import { fetchFlightInfo } from '@/mocks/flightMockData'
 import StepHeader from '@/components/common/StepHeader'
-import BackButton from '@/components/common/BackButton'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
+import { TripFlowDesktopBar, TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 import AiConciergeTip from '@/components/common/AiConciergeTip'
 import TripStepDesktopSplit from '@/components/trip/TripStepDesktopSplit'
 import { FullBleedMintImageHero } from '@/components/trip/MintProgressiveHero'
@@ -32,6 +32,40 @@ function SvgIcon({ name, className = 'w-4 h-4' }) {
     </svg>
   )
 }
+
+/** Step3 헤더 부제 — 고객용: 항공 일정이 왜 필요한지, 무엇을 입력하면 되는지 */
+const STEP3_SUBTITLE_DESKTOP = (
+  <>
+    <p className="text-gray-600">
+      맞춤 여행 준비를 도와드리려면, 먼저 <strong className="text-teal-700">예약하신 항공 일정</strong>이 필요해요. 가는편과
+      오는편 각각 <strong className="text-teal-700">탑승 날짜</strong>와 <strong className="text-teal-700">편명</strong>을
+      입력해 주세요. 확인된 노선 정보를 바탕으로 이후 여행 일정과 방문 지역 안내를 이어갑니다.
+    </p>
+    <p className="text-sm text-gray-500">
+      편명을 입력한 뒤 <strong className="text-teal-600">조회</strong>를 눌러 출발·도착 공항이 맞는지 확인할 수 있어요. 가는편과
+      오는편을 모두 확인하시면 다음 단계로 넘어갈 수 있습니다. 안내가 나오면 항공권이나 예약 확인서에 적힌 편명을 다시 한 번
+      확인해 주세요.
+    </p>
+    <p className="mt-2 text-center text-sm font-medium leading-relaxed text-slate-700">
+      예: KE101, VN401, KE801, OZ851 — 편명을 조회하면 입국 국가·공항이 Step4에 반영됩니다.
+    </p>
+  </>
+)
+
+const STEP3_SUBTITLE_MOBILE = (
+  <>
+    <p className="text-sm text-gray-600">
+      예약하신 항공 일정이 있어야 준비를 이어갈 수 있어요. 가는편·오는편 <strong className="text-teal-700">날짜</strong>와{' '}
+      <strong className="text-teal-700">편명</strong>을 입력하고 조회해 주세요.
+    </p>
+    <p className="text-xs text-gray-500">
+      양쪽 모두 확인되면 다음 단계로 이동합니다. 편명은 예약 확인서와 동일하게 입력해 주세요.
+    </p>
+    <p className="mt-2 text-center text-xs font-medium leading-relaxed text-slate-700">
+      예: KE101, VN401, KE801, OZ851 — 편명을 조회하면 입국 국가·공항이 Step4에 반영됩니다.
+    </p>
+  </>
+)
 
 /* ─────────────────────────────────────────────
    조회 결과 배지 (출발 → 도착 노선 표시)
@@ -300,21 +334,19 @@ function TripNewStep3Page() {
         fullBleed={<FullBleedMintImageHero src={HERO_IMAGE} alt="비행기 창문" />}
         left={
           <>
-            <div className="mb-6 flex justify-end">
-              <BackButton to="/trips/new/step2" />
-            </div>
+            <TripFlowDesktopBar backTo="/trips/new/step2" className="mb-6" />
 
             <StepHeader
               currentStep={STEP3_CONFIG.currentStep}
               totalSteps={STEP3_CONFIG.totalSteps}
-              title="예약한 항공편 정보를 
-          입력하세요"
-              subtitle={
+              title={
                 <>
-                  편명을 입력하고 <strong className="text-teal-600">조회</strong> 버튼을 눌러주세요.<br />
-                  AI가 비행 일정에 맞춰 최적의 여행 계획을 제안합니다.
+                  예약한 항공편 정보를
+                  <br />
+                  입력하세요
                 </>
               }
+              subtitle={STEP3_SUBTITLE_DESKTOP}
               className="mb-8"
             />
 
@@ -323,10 +355,6 @@ function TripNewStep3Page() {
                 <DesktopFlightCard key={section.id} {...cardProps(section)} />
               ))}
             </div>
-
-            <p className="mt-4 text-center text-xs text-gray-400">
-              예: KE101, VN401, KE801, OZ851 — 편명을 조회하면 입국 국가·공항이 Step4에 반영됩니다.
-            </p>
 
             <div className="mt-5 flex justify-end">
               <button
@@ -364,19 +392,15 @@ function TripNewStep3Page() {
       ══════════════════════════════════ */}
       <div className="md:hidden">
 
-        {/* 모바일 상단 바 */}
-        <div className="flex items-center justify-between px-5 py-4 bg-white/80">
-          <span className="font-bold text-gray-900">Travel Plans</span>
-          <BackButton to="/trips/new/step2" />
-        </div>
+        <TripFlowMobileBar backTo="/trips/new/step2" />
 
-        <div className="px-5 pt-4 pb-36">
+        <div className="px-5 pt-4 pb-44">
 
           <StepHeader
             currentStep={STEP3_CONFIG.currentStep}
             totalSteps={STEP3_CONFIG.totalSteps}
             title={<>예약한 항공편 정보를<br />입력하세요</>}
-            subtitle="편명을 입력하고 조회 버튼을 눌러주세요."
+            subtitle={STEP3_SUBTITLE_MOBILE}
             className="mb-6"
           />
 
@@ -413,8 +437,8 @@ function TripNewStep3Page() {
           </div>
         </div>
 
-        {/* 모바일 하단 고정 CTA */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-5 pb-6 pt-3 bg-gradient-to-t from-white/95 to-transparent">
+        {/* 모바일 하단 고정 CTA — 바텀 네비(z-50)에 가리지 않도록 탭 높이만큼 위에 배치 */}
+        <div className="fixed bottom-16 left-0 right-0 z-40 px-5 pb-3 pt-3 bg-gradient-to-t from-white via-white/95 to-transparent [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             disabled={!isValid}
@@ -435,7 +459,7 @@ function TripNewStep3Page() {
         </div>
       </div>
 
-      <AiPlannerFab />
+      <AiPlannerFab mobileBottomClassName="bottom-[10.25rem]" />
     </div>
   )
 }

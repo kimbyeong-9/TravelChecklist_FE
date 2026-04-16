@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
 import { loadGuideArchive, clearGuideArchive } from '@/utils/guideArchiveStorage'
+import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 function TripGuideArchiveInner({ tripId }) {
   const [entries, setEntries] = useState(() => loadGuideArchive(tripId))
@@ -32,10 +33,12 @@ function TripGuideArchiveInner({ tripId }) {
       className="min-h-screen"
       style={{ background: 'linear-gradient(180deg, #E0F7FA 0%, #F8FAFC 55%, #F1F5F9 100%)' }}
     >
-      <div className="mx-auto max-w-3xl px-4 py-8 md:py-12">
+      <TripFlowMobileBar backTo="/" />
+
+      <div className="mx-auto max-w-3xl px-4 py-6 md:py-12">
         <Link
           to="/"
-          className="text-sm text-teal-700 hover:text-teal-900 mb-4 inline-flex items-center gap-1 font-medium"
+          className="mb-4 hidden items-center gap-1 text-sm font-medium text-teal-700 hover:text-teal-900 md:inline-flex"
         >
           홈으로
         </Link>

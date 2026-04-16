@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import BrandLogo from '@/components/common/BrandLogo'
 import {
   STAGES, TIPS, LOADING_ICON_PATHS,
   BLUR_ORBS, BRAND_DOTS,
@@ -197,9 +198,7 @@ function TripLoadingPage() {
             />
           ))}
         </div>
-        <p className="text-[10px] font-semibold tracking-[0.25em] text-cyan-400 uppercase">
-          The Editorial Architect
-        </p>
+        <BrandLogo className="h-5 w-auto opacity-95" />
       </div>
 
     </div>

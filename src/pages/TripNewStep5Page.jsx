@@ -10,8 +10,8 @@ import {
   EDITORIAL_PICK,
 } from '@/mocks/tripNewStep5Data'
 import StepHeader from '@/components/common/StepHeader'
-import BackButton from '@/components/common/BackButton'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
+import { TripFlowDesktopBar, TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 function SvgIcon({ name, className = 'w-6 h-6' }) {
   const d = STEP5_ICON_PATHS[name]
@@ -74,19 +74,14 @@ export default function TripNewStep5Page() {
     ].join(' ')
   }
 
-  const styleCardClass = (id, opts = {}) => {
-    const { featuredMobile } = opts
+  /** 여행 스타일 카드 — 모바일·데스크톱 동일 톤·크기 (먹방 등 특별 그리드/다크 배경 없음) */
+  const styleCardClass = (id) => {
     const on = styleIds.includes(id)
     const base = [
-      'rounded-2xl border-2 p-3 flex flex-col items-center justify-center gap-1.5 text-center transition-all duration-200',
-      featuredMobile ? 'min-h-[88px] col-span-2 sm:col-span-1' : 'min-h-[76px]',
+      'rounded-2xl border-2 p-3 flex flex-col items-center justify-center gap-1.5 text-center transition-all duration-200 min-h-[76px]',
     ]
     if (on) {
       base.push('border-amber-400 bg-amber-200/95 shadow-md ring-1 ring-amber-300/70 text-gray-900')
-    } else if (featuredMobile) {
-      base.push(
-        'border-white/20 bg-gradient-to-br from-slate-800/95 via-teal-900/90 to-cyan-900/85 text-white shadow-inner',
-      )
     } else {
       base.push('border-gray-100 bg-white/95 hover:bg-cyan-50/80 text-gray-800 shadow-sm')
     }
@@ -101,9 +96,7 @@ export default function TripNewStep5Page() {
       {/* ── 데스크톱: 웹 레퍼런스 — 좌 동행·에디토리얼 / 우 스타일 그리드 ── */}
       <div className="hidden md:flex flex-col min-h-screen">
         <div className="max-w-[1320px] mx-auto w-full px-12 pt-10 pb-4">
-          <div className="flex justify-end mb-6">
-            <BackButton to="/trips/new/step4" />
-          </div>
+          <TripFlowDesktopBar backTo="/trips/new/step4" className="mb-6" />
           <StepHeader
             currentStep={STEP5_CONFIG.currentStep}
             totalSteps={STEP5_CONFIG.totalSteps}
@@ -199,12 +192,9 @@ export default function TripNewStep5Page() {
 
       {/* ── 모바일: 앱 레퍼런스 — 세로 스택 + 하단 고정 CTA ── */}
       <div className="md:hidden">
-        <div className="flex items-center justify-between px-5 py-4 bg-white/85 backdrop-blur-sm border-b border-white/50">
-          <span className="font-bold text-gray-900">Travel Plans</span>
-          <BackButton to="/trips/new/step4" />
-        </div>
+        <TripFlowMobileBar backTo="/trips/new/step4" />
 
-        <div className="px-5 pt-5 pb-40">
+        <div className="px-5 pt-5 pb-44">
           <StepHeader
             currentStep={STEP5_CONFIG.currentStep}
             totalSteps={STEP5_CONFIG.totalSteps}
@@ -236,29 +226,23 @@ export default function TripNewStep5Page() {
 
           <SectionLabel num={2} label="여행 스타일" />
           <div className="grid grid-cols-2 gap-2.5">
-            {TRAVEL_STYLES.map((s, index) => (
+            {TRAVEL_STYLES.map((s) => (
               <button
                 key={s.id}
                 type="button"
                 onClick={() => toggleStyle(s.id)}
-                className={styleCardClass(s.id, { featuredMobile: index === 0 })}
+                className={styleCardClass(s.id)}
               >
                 <span className="text-2xl leading-none" aria-hidden>
                   {s.emoji}
                 </span>
-                <span
-                  className={`text-xs font-bold leading-tight ${
-                    index === 0 && !styleIds.includes(s.id) ? 'text-white' : ''
-                  }`}
-                >
-                  {s.label}
-                </span>
+                <span className="text-xs font-bold leading-tight">{s.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-5 pb-6 pt-4 bg-gradient-to-t from-white via-white/98 to-transparent border-t border-white/60">
+        <div className="fixed bottom-16 left-0 right-0 z-40 px-5 pb-3 pt-3 bg-gradient-to-t from-white via-white/95 to-transparent [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleCreatePlan}
@@ -274,7 +258,7 @@ export default function TripNewStep5Page() {
         </div>
       </div>
 
-      <AiPlannerFab />
+      <AiPlannerFab mobileBottomClassName="bottom-[10.25rem]" />
     </div>
   )
 }

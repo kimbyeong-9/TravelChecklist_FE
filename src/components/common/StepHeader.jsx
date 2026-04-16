@@ -5,7 +5,7 @@
  *   currentStep  {number}  현재 스텝 번호  (예: 1)
  *   totalSteps   {number}  전체 스텝 수    (예: 4)
  *   title        {string|ReactNode}  제목 텍스트 (줄바꿈 포함 가능)
- *   subtitle     {string}  (optional) 제목 아래 소개 문구
+ *   subtitle     {string|ReactNode}  (optional) 제목 아래 소개 문구
  *   className    {string}  (optional) 외부 여백 등 추가 클래스
  */
 export default function StepHeader({
@@ -42,11 +42,11 @@ export default function StepHeader({
         </div>
       </div>
 
-      {/* 부제목 (optional) */}
+      {/* 부제목 (optional) — 문자열·복수 문단·목록 등 ReactNode 허용 */}
       {subtitle && (
-        <p className="text-gray-500 text-base leading-relaxed">
+        <div className="text-gray-500 text-base leading-relaxed space-y-2.5 [&_strong]:font-semibold [&_ul]:text-sm [&_ul]:text-gray-500">
           {subtitle}
-        </p>
+        </div>
       )}
     </div>
   )

@@ -15,8 +15,8 @@ import {
   formatTripDateLabel,
 } from '@/mocks/tripNewStep4Data'
 import StepHeader from '@/components/common/StepHeader'
-import BackButton from '@/components/common/BackButton'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
+import { TripFlowDesktopBar, TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 import AiConciergeTip from '@/components/common/AiConciergeTip'
 import TripStepDesktopSplit from '@/components/trip/TripStepDesktopSplit'
 import { FullBleedMintGlobeHero } from '@/components/trip/MintProgressiveHero'
@@ -558,9 +558,7 @@ function TripNewStep4Page() {
         }
         left={
           <>
-            <div className="mb-6 flex justify-end">
-              <BackButton to="/trips/new/step3" />
-            </div>
+            <TripFlowDesktopBar backTo="/trips/new/step3" className="mb-6" />
 
             <StepHeader
               currentStep={STEP4_CONFIG.currentStep}
@@ -641,10 +639,7 @@ function TripNewStep4Page() {
       />
 
       <div className="md:hidden">
-        <div className="flex items-center justify-between px-5 py-4 bg-white/80">
-          <span className="font-bold text-gray-900">Travel Plans</span>
-          <BackButton to="/trips/new/step3" />
-        </div>
+        <TripFlowMobileBar backTo="/trips/new/step3" />
 
         <div className="px-5 pt-4 pb-44">
           <StepHeader
@@ -714,7 +709,8 @@ function TripNewStep4Page() {
           )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 z-40 px-5 pb-6 pt-3 bg-gradient-to-t from-white/95 to-transparent">
+        {/* 바텀 네비에 가리지 않도록 Step3와 동일: 탭 높이만큼 위에 고정 */}
+        <div className="fixed bottom-16 left-0 right-0 z-40 px-5 pb-3 pt-3 bg-gradient-to-t from-white via-white/95 to-transparent [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
           <button
             type="button"
             onClick={handleNext}
@@ -733,7 +729,7 @@ function TripNewStep4Page() {
         </div>
       </div>
 
-      <AiPlannerFab />
+      <AiPlannerFab mobileBottomClassName="bottom-[10.25rem]" />
     </div>
   )
 }

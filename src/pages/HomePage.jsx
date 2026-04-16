@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { IMAGES } from '@/images/constants'
 import { FEATURE_CARDS, FOOTER_SECTIONS, FOOTER_BOTTOM_LINKS } from '@/mocks/homeData'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
+import BrandLogo from '@/components/common/BrandLogo'
+import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 /* ─────────────────────────────────────────────
    원형 진행률 SVG (모바일 Progress Card)
@@ -81,6 +83,7 @@ function HomePage() {
 
   return (
     <div className="bg-white">
+      <TripFlowMobileBar showBack={false} />
 
       {/* ══════════════════════════════════
           [MOBILE ONLY] 히어로 이미지
@@ -205,12 +208,6 @@ function HomePage() {
                 style={{ background: 'linear-gradient(135deg, #06B6D4, #8B5CF6)' }}
               >
                 시작하기
-              </button>
-              <button className="text-gray-600 hover:text-gray-900 font-medium text-sm flex items-center gap-1.5 transition-colors">
-                사용 방법 보기
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
               </button>
             </div>
           </div>
@@ -410,7 +407,9 @@ function HomePage() {
       <footer className="hidden md:block bg-white border-t border-gray-100 py-12">
         <div className="mx-auto max-w-6xl px-6 flex flex-wrap items-start justify-between gap-10">
           <div className="max-w-xs">
-            <p className="text-cyan-600 font-semibold text-sm mb-2">여행 체크리스트</p>
+            <div className="mb-2">
+              <BrandLogo className="h-6 w-auto" />
+            </div>
             <p className="text-xs text-gray-500 leading-relaxed">
               항공·일정을 바탕으로 준비물과 방문 동선을 정리하고, 체크리스트로 출발 전까지 한눈에 확인할 수 있는 여행 준비
               서비스입니다.
@@ -444,7 +443,7 @@ function HomePage() {
         <div className="mx-auto max-w-6xl px-6 mt-10 pt-6 border-t border-gray-50">
           <LegalFooterLinks className="flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-xs text-gray-400 mb-5" />
           <p className="text-xs text-gray-400 text-center">
-            © 2024 여행 체크리스트. 무단 복제 및 배포를 금합니다.
+            © 2024 CHECKMATE. 무단 복제 및 배포를 금합니다.
           </p>
         </div>
       </footer>

@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getGuideArchiveEntry } from '@/utils/guideArchiveStorage'
 import GuideSnapshotView from '@/components/guide/GuideSnapshotView'
+import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 function TripGuideArchiveDetailInner({ tripId, entryId }) {
   const navigate = useNavigate()
@@ -30,7 +31,9 @@ function TripGuideArchiveDetailInner({ tripId, entryId }) {
       className="min-h-screen"
       style={{ background: 'linear-gradient(180deg, #E0F7FA 0%, #F8FAFC 55%, #F1F5F9 100%)' }}
     >
-      <div className="mx-auto max-w-6xl px-4 pt-6 md:pt-8 flex flex-wrap gap-3 items-center">
+      <TripFlowMobileBar backTo={`/trips/${tripId}/guide-archive`} />
+
+      <div className="mx-auto hidden max-w-6xl flex-wrap items-center gap-3 px-4 pt-6 md:flex md:pt-8">
         <button
           type="button"
           onClick={() => navigate(`/trips/${tripId}/guide-archive`)}

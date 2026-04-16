@@ -8,6 +8,7 @@ import {
 } from '@/mocks/searchData'
 import { saveItemForTrip, loadSavedItems } from '@/utils/savedTripItems'
 import { appendGuideArchiveEntry, loadGuideArchive } from '@/utils/guideArchiveStorage'
+import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 const trackEvent = (eventName, properties = {}) => {
   console.debug('[Event]', eventName, properties)
@@ -171,9 +172,11 @@ function TripSearchInner({ tripId }) {
       className="min-h-screen"
       style={{ background: 'linear-gradient(180deg, #E0F7FA 0%, #F8FAFC 55%, #F1F5F9 100%)' }}
     >
+      <TripFlowMobileBar backTo="/" />
+
       {saveNotice && (
         <div
-          className={`fixed top-20 left-1/2 z-[60] flex max-w-md -translate-x-1/2 flex-col items-center gap-1 rounded-2xl border px-5 py-3.5 shadow-lg md:top-24 ${
+          className={`fixed left-1/2 z-[60] flex max-w-md -translate-x-1/2 flex-col items-center gap-1 rounded-2xl border px-5 py-3.5 shadow-lg top-[calc(4.25rem+env(safe-area-inset-top,0px))] md:top-24 ${
             saveNotice === 'already'
               ? 'border-amber-200 bg-amber-50'
               : 'border-teal-200 bg-white'
@@ -206,7 +209,7 @@ function TripSearchInner({ tripId }) {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="text-sm text-teal-700 hover:text-teal-900 mb-3 flex items-center gap-1 font-medium"
+              className="mb-3 hidden items-center gap-1 text-sm font-medium text-teal-700 hover:text-teal-900 md:flex"
             >
               ← 내 여행으로
             </button>
@@ -404,8 +407,8 @@ function TripSearchInner({ tripId }) {
           </div>
         </section>
 
-        {/* 하단 고정: 저장 + 홈으로 (모바일) */}
-        <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 px-4 pb-6 pt-3 bg-gradient-to-t from-white via-white/98 to-transparent border-t border-gray-100">
+        {/* 하단 고정: 저장 + 홈으로 (모바일) — 바텀 네비 위에 두어 잘리지 않게 */}
+        <div className="md:hidden fixed bottom-16 left-0 right-0 z-40 px-4 pb-3 pt-3 bg-gradient-to-t from-white via-white/95 to-transparent [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="flex gap-3">
             <button
               type="button"
@@ -424,7 +427,7 @@ function TripSearchInner({ tripId }) {
           </div>
         </div>
 
-        <div className="h-24 md:hidden" aria-hidden />
+        <div className="h-40 md:hidden" aria-hidden />
       </div>
 
       {/* 홈 이동 확인 모달 */}

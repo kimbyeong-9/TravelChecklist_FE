@@ -5,6 +5,7 @@ import { mergeWithInitialChecklist, removeSavedItem, loadSavedItems } from '@/ut
 import { ICON_PATHS, CATEGORY_ICON_MAP } from '@/mocks/checklistIcons'
 import { SIDEBAR_STATS, WEATHER_RECOMMENDED_ITEMS } from '@/mocks/checklistSidebar'
 import { IMAGES } from '@/images/constants'
+import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 /* ─────────────────────────────────────────────
    이벤트 트래킹 헬퍼 (추후 SDK 교체)
@@ -249,7 +250,9 @@ function TripChecklistInner({ tripId }) {
       {/* ══════════════════════════════════
           모바일 레이아웃 (md 미만)
       ══════════════════════════════════ */}
-      <div className="md:hidden px-5 pt-6 pb-32">
+      <TripFlowMobileBar backTo={`/trips/${tripId}/search`} />
+
+      <div className="md:hidden px-5 pt-4 pb-32">
 
         {/* CONFIRM LOOP 헤더 */}
         <p className="text-[10px] font-bold tracking-widest text-cyan-500 uppercase mb-2">Confirm Loop</p>

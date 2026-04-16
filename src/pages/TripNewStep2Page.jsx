@@ -7,8 +7,8 @@ import {
 } from '@/mocks/tripNewStep2Data'
 import StepHeader from '@/components/common/StepHeader'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
-import BackButton from '@/components/common/BackButton'
 import AiConciergeTip from '@/components/common/AiConciergeTip'
+import { TripFlowDesktopBar, TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 
 /* ─────────────────────────────────────────────
    범용 SVG 아이콘
@@ -29,11 +29,19 @@ function TripNewStep2Page() {
 
   const handleSelect = () => navigate('/trips/new/step3')
 
+  const pageBgStyle = {
+    background: `
+      radial-gradient(ellipse 110% 75% at 50% -8%, rgba(6, 182, 212, 0.42), transparent 58%),
+      radial-gradient(ellipse 85% 60% at 100% 15%, rgba(139, 92, 246, 0.12), transparent 50%),
+      radial-gradient(ellipse 80% 55% at 100% 92%, rgba(45, 212, 191, 0.38), transparent 55%),
+      radial-gradient(ellipse 70% 50% at 0% 45%, rgba(167, 243, 208, 0.35), transparent 52%),
+      radial-gradient(ellipse 95% 65% at 50% 105%, rgba(6, 182, 212, 0.12), transparent 55%),
+      linear-gradient(152deg, #7dd3fc 0%, #a5f3fc 22%, #ccfbf1 48%, #a7f3d0 72%, #d1fae5 100%)
+    `,
+  }
+
   return (
-    <div
-      className="min-h-screen"
-      style={{ background: 'linear-gradient(180deg, #E0F7FA 0%, #F0FDFA 100%)' }}
-    >
+    <div className="min-h-screen" style={pageBgStyle}>
 
       {/* ══════════════════════════════════
           데스크탑 레이아웃 (md 이상)
@@ -41,10 +49,7 @@ function TripNewStep2Page() {
       <div className="hidden md:block">
         <div className="mx-auto max-w-5xl px-6 py-10">
 
-          {/* 뒤로가기 버튼 */}
-          <div className="flex justify-end mb-4">
-            <BackButton to="/" />
-          </div>
+          <TripFlowDesktopBar backTo="/" className="mb-4" />
 
           <StepHeader
             currentStep={STEP2_CONFIG.currentStep}
@@ -59,14 +64,10 @@ function TripNewStep2Page() {
               <button
                 key={card.id}
                 onClick={handleSelect}
-                className={`text-left rounded-3xl p-8 transition-all hover:shadow-lg hover:scale-[1.01] ${
-                  card.variant === 'primary'
-                    ? 'bg-white shadow-sm'
-                    : 'bg-cyan-50 shadow-sm'
-                }`}
+                className="text-left rounded-3xl p-8 bg-white shadow-lg shadow-slate-900/[0.08] ring-1 ring-slate-200/90 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:ring-slate-300/90"
               >
                 <div
-                  className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-16 ${
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-16 shadow-sm ${
                     card.variant === 'primary'
                       ? 'bg-cyan-100 text-teal-700'
                       : 'bg-teal-700 text-white'
@@ -113,11 +114,7 @@ function TripNewStep2Page() {
       ══════════════════════════════════ */}
       <div className="md:hidden">
 
-        {/* 모바일 상단 바 */}
-        <div className="flex items-center justify-between px-5 py-4 bg-white/80">
-          <span className="font-bold text-gray-900">Travel Plans</span>
-          <BackButton to="/" />
-        </div>
+        <TripFlowMobileBar backTo="/" />
 
         <div className="px-5 pt-4 pb-32">
 
@@ -134,18 +131,14 @@ function TripNewStep2Page() {
               <button
                 key={card.id}
                 onClick={handleSelect}
-                className={`w-full text-left rounded-2xl p-5 transition-all relative ${
-                  card.variant === 'primary'
-                    ? 'bg-gradient-to-br from-cyan-100 to-cyan-50'
-                    : 'bg-white shadow-sm'
-                }`}
+                className="w-full text-left rounded-2xl p-5 bg-white shadow-lg shadow-slate-900/[0.08] ring-1 ring-slate-200/90 transition-all duration-300 active:scale-[0.99] active:shadow-md"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
                       card.variant === 'primary'
-                        ? 'bg-teal-700/10 text-teal-700'
-                        : 'bg-gray-100 text-gray-500'
+                        ? 'bg-cyan-100 text-teal-700'
+                        : 'bg-teal-700 text-white'
                     }`}
                   >
                     <SvgIcon name={card.icon} className="w-5 h-5" />
@@ -162,25 +155,6 @@ function TripNewStep2Page() {
                 </p>
               </button>
             ))}
-          </div>
-
-          {/* AI Concierge Tips 카드 (버튼 제거) */}
-          <div className="relative rounded-2xl overflow-hidden mb-6">
-            <img
-              src={AI_TIP.mobileImage}
-              alt="하늘 풍경"
-              className="w-full h-44 object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <p className="text-[10px] font-bold text-white/70 tracking-widest uppercase mb-1">
-                {AI_TIP.mobileTitle}
-              </p>
-              <p className="text-sm text-white/90 leading-relaxed">
-                {AI_TIP.mobileDesc}
-              </p>
-            </div>
           </div>
         </div>
       </div>
