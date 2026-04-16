@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import {
   STEP4_CONFIG,
@@ -18,6 +18,10 @@ import StepHeader from '@/components/common/StepHeader'
 import BackButton from '@/components/common/BackButton'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
 import AiConciergeTip from '@/components/common/AiConciergeTip'
+import TripStepDesktopSplit from '@/components/trip/TripStepDesktopSplit'
+import { FullBleedMintGlobeHero } from '@/components/trip/MintProgressiveHero'
+
+const Step4GlobeHero = lazy(() => import('@/components/trip/Step4GlobeHero'))
 
 function SvgIcon({ name, className = 'w-4 h-4' }) {
   return (
@@ -333,6 +337,12 @@ function TripNewStep4Page() {
   const [tripDatesLoading, setTripDatesLoading] = useState(true)
   const [tripDatesError, setTripDatesError] = useState(null)
 
+  const [selectedIds, setSelectedIds] = useState([])
+  /** 프리셋 동네별 방문 기간 */
+  const [visitByPresetId, setVisitByPresetId] = useState({})
+  const [customStops, setCustomStops] = useState([])
+  const [otherStopsNote, setOtherStopsNote] = useState('')
+
   const arrivalKey = `${arrival?.iata ?? ''}-${arrival?.city ?? ''}-${arrival?.country ?? ''}`
 
   useEffect(() => {
@@ -386,12 +396,6 @@ function TripNewStep4Page() {
       })
     )
   }, [tripWindow?.tripStart, tripWindow?.tripEnd])
-
-  const [selectedIds, setSelectedIds] = useState([])
-  /** 프리셋 동네별 방문 기간 */
-  const [visitByPresetId, setVisitByPresetId] = useState({})
-  const [customStops, setCustomStops] = useState([])
-  const [otherStopsNote, setOtherStopsNote] = useState('')
 
   const addCustomStop = useCallback((label) => {
     const normalized = label.trim()
@@ -532,92 +536,109 @@ function TripNewStep4Page() {
       className="min-h-screen"
       style={{ background: 'linear-gradient(180deg, #E0F7FA 0%, #F0FDFA 100%)' }}
     >
-      <div className="hidden md:flex min-h-screen">
-        <div className="flex flex-col w-[500px] flex-shrink-0 px-12 py-10">
-          <div className="flex justify-end mb-6">
-            <BackButton to="/trips/new/step3" />
-          </div>
-
-          <StepHeader
-            currentStep={STEP4_CONFIG.currentStep}
-            totalSteps={STEP4_CONFIG.totalSteps}
-            title="일정과 동네를 정해주세요"
-            subtitle={headerSubtitle}
-            className="mb-6"
+      <TripStepDesktopSplit
+        fullBleed={
+          <FullBleedMintGlobeHero
+            globe={
+              <Suspense
+                fallback={
+                  <div
+                    className="absolute inset-0 animate-pulse opacity-50"
+                    style={{
+                      background:
+                        'radial-gradient(ellipse 80% 70% at 50% 45%, rgba(0, 200, 190, 0.15) 0%, transparent 55%)',
+                    }}
+                  />
+                }
+              >
+                <Step4GlobeHero />
+              </Suspense>
+            }
           />
+        }
+        left={
+          <>
+            <div className="mb-6 flex justify-end">
+              <BackButton to="/trips/new/step3" />
+            </div>
 
-          <div className="flex-1 space-y-5 overflow-y-auto pr-1">
-            <FlightSummaryCard
-              arrival={arrival}
-              showMockBadge={showMockBadge}
-              tripWindow={tripWindow}
-              tripDatesLoading={tripDatesLoading}
-              tripDatesError={tripDatesError}
-              tripSource={tripWindow?.source}
+            <StepHeader
+              currentStep={STEP4_CONFIG.currentStep}
+              totalSteps={STEP4_CONFIG.totalSteps}
+              title="일정과 동네를 정해주세요"
+              subtitle={headerSubtitle}
+              className="mb-6"
             />
 
-            <div className="bg-white/80 rounded-2xl p-4 shadow-sm space-y-4">
-              {isVn ? (
-                <VietnamNeighborhoodPicker
-                  selectedIds={selectedIds}
-                  onToggle={toggleId}
-                  customStops={customStops}
-                  onAddCustom={addCustomStop}
-                  onRemoveCustom={removeCustomStop}
-                />
-              ) : (
-                <div>
-                  <p className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-2">
-                    <SvgIcon name="globe" className="w-4 h-4 text-teal-600" />
-                    방문 예정 도시·동네
-                  </p>
-                  <textarea
-                    value={otherStopsNote}
-                    onChange={(e) => setOtherStopsNote(e.target.value)}
-                    rows={4}
-                    placeholder="예: 파리 11구, 루브르 인근 2박 후 니스 이동..."
-                    className="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500/30 resize-none"
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-1">
+              <FlightSummaryCard
+                arrival={arrival}
+                showMockBadge={showMockBadge}
+                tripWindow={tripWindow}
+                tripDatesLoading={tripDatesLoading}
+                tripDatesError={tripDatesError}
+                tripSource={tripWindow?.source}
+              />
+
+              <div className="space-y-4 rounded-2xl bg-white/80 p-4 shadow-sm">
+                {isVn ? (
+                  <VietnamNeighborhoodPicker
+                    selectedIds={selectedIds}
+                    onToggle={toggleId}
+                    customStops={customStops}
+                    onAddCustom={addCustomStop}
+                    onRemoveCustom={removeCustomStop}
                   />
-                  <p className="text-[11px] text-gray-400 mt-2">
-                    베트남 외 국가는 세부 동네 목록이 준비 중이라 직접 입력해 주세요.
-                  </p>
-                </div>
+                ) : (
+                  <div>
+                    <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-gray-600">
+                      <SvgIcon name="globe" className="h-4 w-4 text-teal-600" />
+                      방문 예정 도시·동네
+                    </p>
+                    <textarea
+                      value={otherStopsNote}
+                      onChange={(e) => setOtherStopsNote(e.target.value)}
+                      rows={4}
+                      placeholder="예: 파리 11구, 루브르 인근 2박 후 니스 이동..."
+                      className="w-full resize-none rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-teal-500/30"
+                    />
+                    <p className="mt-2 text-[11px] text-gray-400">
+                      베트남 외 국가는 세부 동네 목록이 준비 중이라 직접 입력해 주세요.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {isVn && scheduleBlock && (
+                <div className="space-y-4 rounded-2xl bg-white/80 p-4 shadow-sm">{scheduleBlock}</div>
               )}
             </div>
 
-            {isVn && scheduleBlock && (
-              <div className="bg-white/80 rounded-2xl p-4 shadow-sm space-y-4">{scheduleBlock}</div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-end mt-6">
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={!canProceed}
-              className={`flex items-center gap-2 font-bold text-base py-4 px-8 rounded-2xl shadow-sm transition-all ${
-                canProceed
-                  ? 'bg-teal-700 hover:bg-teal-800 text-white hover:shadow-md cursor-pointer'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }`}
-            >
-              다음 단계로 이동
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        <div className="flex-1 relative overflow-hidden">
-          <img src={heroSrc} alt="여행지" className="w-full h-full object-cover transition-all duration-700" loading="eager" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/70" />
-
-          <div className="absolute bottom-8 left-8 right-8">
+            <div className="mt-6 flex items-center justify-end">
+              <button
+                type="button"
+                onClick={handleNext}
+                disabled={!canProceed}
+                className={`flex items-center gap-2 rounded-2xl px-8 py-4 text-base font-bold shadow-sm transition-all ${
+                  canProceed
+                    ? 'cursor-pointer bg-teal-700 text-white hover:bg-teal-800 hover:shadow-md'
+                    : 'cursor-not-allowed bg-gray-200 text-gray-400'
+                }`}
+              >
+                다음 단계로 이동
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                </svg>
+              </button>
+            </div>
+          </>
+        }
+        right={
+          <div className="pointer-events-auto absolute bottom-8 left-8 right-8 z-30">
             <AiConciergeTip title={AI_TIP.title} description={AI_TIP.description} />
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="md:hidden">
         <div className="flex items-center justify-between px-5 py-4 bg-white/80">

@@ -14,6 +14,8 @@ import StepHeader from '@/components/common/StepHeader'
 import BackButton from '@/components/common/BackButton'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
 import AiConciergeTip from '@/components/common/AiConciergeTip'
+import TripStepDesktopSplit from '@/components/trip/TripStepDesktopSplit'
+import { FullBleedMintImageHero } from '@/components/trip/MintProgressiveHero'
 
 /* ─────────────────────────────────────────────
    범용 SVG 아이콘
@@ -294,76 +296,68 @@ function TripNewStep3Page() {
       {/* ══════════════════════════════════
           데스크탑 레이아웃 (md 이상)
       ══════════════════════════════════ */}
-      <div className="hidden md:flex min-h-screen">
+      <TripStepDesktopSplit
+        fullBleed={<FullBleedMintImageHero src={HERO_IMAGE} alt="비행기 창문" />}
+        left={
+          <>
+            <div className="mb-6 flex justify-end">
+              <BackButton to="/trips/new/step2" />
+            </div>
 
-        {/* 왼쪽 입력 패널 */}
-        <div className="flex flex-col w-[500px] flex-shrink-0 px-12 py-10">
-
-          <div className="flex justify-end mb-6">
-            <BackButton to="/trips/new/step2" />
-          </div>
-
-          <StepHeader
-            currentStep={STEP3_CONFIG.currentStep}
-            totalSteps={STEP3_CONFIG.totalSteps}
-            title="예약한 항공편 정보를 
+            <StepHeader
+              currentStep={STEP3_CONFIG.currentStep}
+              totalSteps={STEP3_CONFIG.totalSteps}
+              title="예약한 항공편 정보를 
           입력하세요"
-            subtitle={
-              <>
-                편명을 입력하고 <strong className="text-teal-600">조회</strong> 버튼을 눌러주세요.<br />
-                AI가 비행 일정에 맞춰 최적의 여행 계획을 제안합니다.
-              </>
-            }
-            className="mb-8"
-          />
+              subtitle={
+                <>
+                  편명을 입력하고 <strong className="text-teal-600">조회</strong> 버튼을 눌러주세요.<br />
+                  AI가 비행 일정에 맞춰 최적의 여행 계획을 제안합니다.
+                </>
+              }
+              className="mb-8"
+            />
 
-          {/* 항공편 입력 카드 목록 */}
-          <div className="space-y-4 flex-1">
-            {FLIGHT_SECTIONS.map((section) => (
-              <DesktopFlightCard key={section.id} {...cardProps(section)} />
-            ))}
-          </div>
+            <div className="flex-1 space-y-4">
+              {FLIGHT_SECTIONS.map((section) => (
+                <DesktopFlightCard key={section.id} {...cardProps(section)} />
+              ))}
+            </div>
 
-          {/* 안내 문구 */}
-          <p className="mt-4 text-xs text-gray-400 text-center">
-            예: KE101, VN401, KE801, OZ851 — 편명을 조회하면 입국 국가·공항이 Step4에 반영됩니다.
-          </p>
+            <p className="mt-4 text-center text-xs text-gray-400">
+              예: KE101, VN401, KE801, OZ851 — 편명을 조회하면 입국 국가·공항이 Step4에 반영됩니다.
+            </p>
 
-          {/* 다음 버튼 */}
-          <div className="flex justify-end mt-5">
-            <button
-              onClick={() => navigate('/trips/new/step4', {
-                state: { destination: flightInfo.departure?.arrival || null }
-              })}
-              className="flex items-center gap-2 font-bold text-base py-4 px-8 rounded-2xl transition-all bg-teal-700 hover:bg-teal-800 text-white shadow-sm hover:shadow-md cursor-pointer"
-            >
-              다음 단계로 이동
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* 오른쪽 이미지 패널 */}
-        <div className="flex-1 relative overflow-hidden">
-          <img
-            src={HERO_IMAGE}
-            alt="비행기 창문"
-            className="w-full h-full object-cover"
-            loading="eager"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/10 to-black/70" />
-
-          {/* 하단 AI 컨시어지 팁 */}
-          <div className="absolute bottom-8 left-8 right-8">
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                disabled={!isValid}
+                onClick={() => navigate('/trips/new/step4', {
+                  state: { destination: flightInfo.departure?.arrival || null }
+                })}
+                className={`flex items-center gap-2 rounded-2xl px-8 py-4 text-base font-bold shadow-sm transition-all ${
+                  isValid
+                    ? 'cursor-pointer bg-teal-700 text-white hover:bg-teal-800 hover:shadow-md'
+                    : 'cursor-not-allowed bg-gray-200 text-gray-400'
+                }`}
+              >
+                다음 단계로 이동
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z" />
+                </svg>
+              </button>
+            </div>
+          </>
+        }
+        right={
+          <div className="pointer-events-auto absolute bottom-8 left-8 right-8 z-30">
             <AiConciergeTip
               title={AI_TIP.title}
               description={AI_TIP.description}
             />
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* ══════════════════════════════════
           모바일 레이아웃 (md 미만)
@@ -422,10 +416,16 @@ function TripNewStep3Page() {
         {/* 모바일 하단 고정 CTA */}
         <div className="fixed bottom-0 left-0 right-0 z-40 px-5 pb-6 pt-3 bg-gradient-to-t from-white/95 to-transparent">
           <button
+            type="button"
+            disabled={!isValid}
             onClick={() => navigate('/trips/new/step4', {
               state: { destination: flightInfo.departure?.arrival || null }
             })}
-            className="w-full flex items-center justify-center gap-2 font-bold text-base py-4 rounded-2xl transition-all bg-teal-700 hover:bg-teal-800 text-white shadow-sm cursor-pointer"
+            className={`w-full flex items-center justify-center gap-2 font-bold text-base py-4 rounded-2xl transition-all shadow-sm ${
+              isValid
+                ? 'bg-teal-700 hover:bg-teal-800 text-white cursor-pointer'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
           >
             다음 단계로 이동
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
