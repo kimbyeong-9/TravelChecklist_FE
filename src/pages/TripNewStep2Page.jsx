@@ -27,7 +27,13 @@ function SvgIcon({ name, className = 'w-4 h-4' }) {
 function TripNewStep2Page() {
   const navigate = useNavigate()
 
-  const handleSelect = () => navigate('/trips/new/step3')
+  const handleCardNavigate = (cardId) => {
+    if (cardId === 'notBooked') {
+      navigate('/trips/new/destination')
+      return
+    }
+    navigate('/trips/new/step3')
+  }
 
   const pageBgStyle = {
     background: `
@@ -63,7 +69,7 @@ function TripNewStep2Page() {
             {OPTION_CARDS.map((card) => (
               <button
                 key={card.id}
-                onClick={handleSelect}
+                onClick={() => handleCardNavigate(card.id)}
                 className="text-left rounded-3xl p-8 bg-white shadow-lg shadow-slate-900/[0.08] ring-1 ring-slate-200/90 transition-all duration-300 hover:shadow-xl hover:scale-[1.01] hover:ring-slate-300/90"
               >
                 <div
@@ -85,12 +91,8 @@ function TripNewStep2Page() {
             ))}
           </div>
 
-          {/* AI 컨시어지 팁 */}
-          <AiConciergeTip
-            title={AI_TIP.title}
-            description={AI_TIP.description}
-            className="mb-12"
-          />
+          {/* 꿀 Tip! 카드 */}
+          <AiConciergeTip description={AI_TIP.description} className="mb-12" />
 
           {/* 푸터 */}
           <div className="border-t border-gray-200 pt-6 flex items-center justify-between">
@@ -130,7 +132,7 @@ function TripNewStep2Page() {
             {OPTION_CARDS.map((card) => (
               <button
                 key={card.id}
-                onClick={handleSelect}
+                onClick={() => handleCardNavigate(card.id)}
                 className="w-full text-left rounded-2xl p-5 bg-white shadow-lg shadow-slate-900/[0.08] ring-1 ring-slate-200/90 transition-all duration-300 active:scale-[0.99] active:shadow-md"
               >
                 <div className="flex items-start justify-between mb-4">

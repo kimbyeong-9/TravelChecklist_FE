@@ -4,6 +4,7 @@ import RootLayout from '@/layouts/RootLayout'
 import HomePage from '@/pages/HomePage'
 import LoginPage from '@/pages/LoginPage'
 import TripNewStep2Page from '@/pages/TripNewStep2Page'
+import TripNewDestinationPage from '@/pages/TripNewDestinationPage'
 import TripNewStep3Page from '@/pages/TripNewStep3Page'
 import TripNewStep4Page from '@/pages/TripNewStep4Page'
 import TripNewStep5Page from '@/pages/TripNewStep5Page'
@@ -23,7 +24,7 @@ import ErrorPage from '@/pages/ErrorPage'
  *   /                       홈 / 랜딩
  *   /login                  로그인 · 회원가입
  *   /trips/new              → /trips/new/step2 리다이렉트 (TripNewPage 제거)
- *   /trips/new/step2~       새 여행 플로우
+ *   /trips/new/step2~       새 여행 플로우 (/destination = 예매 전 도시·날짜)
  *   /trips/:id/search       준비 항목 탐색         (Store Loop - DRD-1)
  *   /trips/:id/guide-archive 저장 가이드 목록
  *   /trips/:id/checklist    내 체크리스트          (Confirm Loop - DRD-2)
@@ -49,7 +50,9 @@ const AppRoutes = () => {
         { path: '/mypage',              element: <MyPage /> },
         { path: '/trips/new',           element: <Navigate to="/trips/new/step2" replace /> },
         { path: '/trips/new/step2',     element: <TripNewStep2Page /> },
+        { path: '/trips/new/destination', element: <TripNewDestinationPage /> },
         { path: '/trips/new/step3',     element: <TripNewStep3Page /> },
+        /** Step4: 이 경로는 TripNewStep4Page 단 하나만 사용 (중복 라우트 없음) */
         { path: '/trips/new/step4',     element: <TripNewStep4Page /> },
         { path: '/trips/new/step5',     element: <TripNewStep5Page /> },
         { path: '/trips/:id/search',                  element: <TripSearchPage /> },

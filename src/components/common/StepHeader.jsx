@@ -20,8 +20,10 @@ export default function StepHeader({
   return (
     <div className={className}>
       {/* STEP 라벨 */}
-      <p className="text-sm font-bold text-cyan-600 tracking-wide mb-2">
-        STEP {String(currentStep).padStart(2, '0')}
+      <p className="mb-2">
+        <span className="inline-block rounded-full bg-sky-100 px-3 py-1 text-xs font-bold tracking-wide text-sky-700">
+          STEP {String(currentStep).padStart(2, '0')}
+        </span>
       </p>
 
       {/* 제목 — 데스크탑·모바일 동일 크기 */}

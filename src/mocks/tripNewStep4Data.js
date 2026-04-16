@@ -8,6 +8,7 @@
 /* ─────────────────────────────────────────────
    스텝 설정
 ───────────────────────────────────────────── */
+/** StepHeader: STEP 03 · 카운터 3 / 5 (전체 플로우 기준 진행도) */
 export const STEP4_CONFIG = {
   totalSteps: 5,
   currentStep: 3,
@@ -33,20 +34,14 @@ export const STEP4_ICON_PATHS = {
     'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
   calendar:
     'M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z',
+  grip:
+    'M4 10h16v2H4v-2zm0-4h16v2H4V6zm0 8h16v2H4v-2z',
 }
 
-/* ─────────────────────────────────────────────
-   Step3에서 넘어오지 않았을 때 기본 입국 정보 (베트남 · 호치민 SGN)
-   - 실서비스에서는 항공 예약/조회 결과로 항상 채워짐
-───────────────────────────────────────────── */
-export const MOCK_DEFAULT_ARRIVAL = {
-  iata: 'SGN',
-  city: '호치민',
-  country: '베트남',
-  countryCode: 'VN',
-}
-
-/** 항공 도착지가 베트남 현지 일정 선택 UI를 쓸지 판별 */
+/**
+ * 항공 도착지가 베트남 현지 일정 선택 UI(동네 검색·일정)를 쓸지 판별합니다.
+ * false면 Step4에서도 항공 카드·추가 지역 입력만 보이고, 베트남 전용 피커는 숨깁니다.
+ */
 export function isVietnamArrival(arrival) {
   if (!arrival) return true
   if (arrival.countryCode === 'VN') return true
@@ -167,22 +162,36 @@ export function getMockTripWindowForArrival(arrival) {
  * Step4 마운트 시 한 번 호출되며, 응답이 바뀌면 동네별 날짜 입력의 min/max(선택 가능 일자)가
  * 자동으로 갱신됩니다. 사용자가 이미 고른 날짜는 새 기간 안으로 보정됩니다.
  */
-export async function fetchTripDatesForStep4(arrival) {
+/**
+ * @param {object} arrival Step3/목적지에서 넘긴 입국 정보
+ * @param {{ tripStart?: string, tripEnd?: string, source?: string } | null} [opts]
+ *        목적지 페이지 등에서 사용자가 고른 여행 기간이 있으면 목 기간 대신 사용
+ */
+export async function fetchTripDatesForStep4(arrival, opts = null) {
   await new Promise((resolve) => setTimeout(resolve, 450))
+  if (opts?.tripStart && opts?.tripEnd) {
+    const totalDays = countInclusiveTripDays(opts.tripStart, opts.tripEnd)
+    return {
+      tripStart: opts.tripStart,
+      tripEnd: opts.tripEnd,
+      totalDays: totalDays > 0 ? totalDays : 1,
+      source: opts.source || 'destination-picker',
+    }
+  }
   const mock = getMockTripWindowForArrival(arrival)
   return {
     tripStart: mock.tripStart,
     tripEnd: mock.tripEnd,
     totalDays: mock.totalDays,
-    source: 'mock',
+    /** UI에 목데이터 문구를 붙이지 않기 위한 구분값 (추후 API 연동 시 대체) */
+    source: 'itinerary',
   }
 }
 
 /* ─────────────────────────────────────────────
-   AI 컨시어지 팁
+   AI 팁 (제목: 꿀 Tip!)
 ───────────────────────────────────────────── */
 export const AI_TIP = {
-  title: 'AI 컨시어지 팁',
   description:
     '입국 공항과 <strong>동네별 방문 날짜</strong>가 정해지면 날씨·일정에 맞는 <strong>준비물 리스트</strong>를 더 정확히 드릴 수 있어요.',
 }

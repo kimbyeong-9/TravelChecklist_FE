@@ -62,10 +62,9 @@ export const OPTION_CARDS = [
 ]
 
 /* ─────────────────────────────────────────────
-   AI 컨시어지 팁
+   AI 팁 (제목 UI: 꿀 Tip! — AiConciergeTipHeading)
 ───────────────────────────────────────────── */
 export const AI_TIP = {
-  title: 'AI 컨시어지 팁',
   description:
     '항공권을 아직 예매하지 않으셨다면, <strong>화요일 오후 3시</strong>에 검색해 보세요! 통계적으로 가장 저렴한 티켓을 찾을 확률이 높습니다.',
   mobileTitle: 'AI CONCIERGE TIPS',

@@ -1,12 +1,11 @@
 /**
- * AiPlannerFab — "AI 플래너에게 물어보기" 화면 고정 버튼 (FAB)
+ * AiPlannerFab — "메이퀸에게 물어봐!" 화면 고정 버튼 (FAB)
  *
  * - md 이상: 우측 하단 pill + 문구
  * - 모바일: 우측 하단 원형 · 아이콘만 (다른 하단 UI와 겹침 방지)
  * - mobileBottom: 페이지별 하단 고정 UI(탭·CTA) 높이에 맞춤 Tailwind bottom 클래스
  */
-const CHAT_ICON_PATH =
-  'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z'
+const FAB_ICON_SRC = '/ai-planner-fab-icon.png'
 
 export default function AiPlannerFab({
   /** 모바일 전용 `bottom-*` (예: step3은 하단 CTA 위로: bottom-[11rem]) */
@@ -20,7 +19,7 @@ export default function AiPlannerFab({
   return (
     <button
       type="button"
-      aria-label="AI 플래너에게 물어보기"
+      aria-label="메이퀸에게 물어봐"
       className={`
         fixed z-50 right-4 ${mobileBottom}
         md:bottom-8 md:right-8
@@ -35,34 +34,31 @@ export default function AiPlannerFab({
         .replace(/\s+/g, ' ')}
     >
       {/* 모바일: 아이콘만 · 원형 버튼 */}
-      <span className="flex md:hidden items-center justify-center w-full h-full">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-amber-600"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden
-          >
-            <path d={CHAT_ICON_PATH} />
-          </svg>
+      <span className="flex h-full w-full items-center justify-center md:hidden">
+        <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-amber-50/90 p-1 ring-1 ring-amber-100/80">
+          <img
+            src={FAB_ICON_SRC}
+            alt=""
+            className="h-full w-full object-contain object-center"
+            draggable={false}
+          />
         </span>
       </span>
 
       {/* 데스크톱: 기존 pill */}
-      <span className="hidden md:flex items-center gap-2">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 text-amber-600"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden
-          >
-            <path d={CHAT_ICON_PATH} />
-          </svg>
+      <span className="hidden items-center gap-2 md:flex">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-50/90 p-1 ring-1 ring-amber-100/80">
+          <img
+            src={FAB_ICON_SRC}
+            alt=""
+            className="h-full w-full object-contain object-center"
+            draggable={false}
+          />
         </span>
-        <span className="text-sm font-semibold whitespace-nowrap text-gray-700">AI 플래너에게 물어보기</span>
+        <span className="whitespace-nowrap text-sm text-gray-800">
+          <span className="font-black tracking-tight text-gray-900">메이퀸</span>
+          <span className="font-semibold">에게 물어봐!</span>
+        </span>
       </span>
     </button>
   )

@@ -13,9 +13,10 @@ import { fetchFlightInfo } from '@/mocks/flightMockData'
 import StepHeader from '@/components/common/StepHeader'
 import AiPlannerFab from '@/components/common/AiPlannerFab'
 import { TripFlowDesktopBar, TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
-import AiConciergeTip from '@/components/common/AiConciergeTip'
+import AiConciergeTip, { AiConciergeTipHeading, AiConciergeTipIcon } from '@/components/common/AiConciergeTip'
 import TripStepDesktopSplit from '@/components/trip/TripStepDesktopSplit'
 import { FullBleedMintImageHero } from '@/components/trip/MintProgressiveHero'
+import { saveStep4NavigationState } from '@/utils/tripFlowDraftStorage'
 
 /* ─────────────────────────────────────────────
    범용 SVG 아이콘
@@ -360,9 +361,11 @@ function TripNewStep3Page() {
               <button
                 type="button"
                 disabled={!isValid}
-                onClick={() => navigate('/trips/new/step4', {
-                  state: { destination: flightInfo.departure?.arrival || null }
-                })}
+                onClick={() => {
+                  const navState = { destination: flightInfo.departure?.arrival || null }
+                  saveStep4NavigationState(navState)
+                  navigate('/trips/new/step4', { state: navState })
+                }}
                 className={`flex items-center gap-2 rounded-2xl px-8 py-4 text-base font-bold shadow-sm transition-all ${
                   isValid
                     ? 'cursor-pointer bg-teal-700 text-white hover:bg-teal-800 hover:shadow-md'
@@ -380,7 +383,6 @@ function TripNewStep3Page() {
         right={
           <div className="pointer-events-auto absolute bottom-8 left-8 right-8 z-30">
             <AiConciergeTip
-              title={AI_TIP.title}
               description={AI_TIP.description}
             />
           </div>
@@ -413,10 +415,15 @@ function TripNewStep3Page() {
 
           {/* AI 팁 카드 */}
           <div className="bg-white rounded-2xl p-4 mb-5 flex items-start gap-3 shadow-sm">
-            <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-              <SvgIcon name="sparkle" className="w-4 h-4 text-amber-500" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 p-0.5">
+              <AiConciergeTipIcon className="h-6 w-6" />
             </div>
-            <p className="text-sm text-gray-600 leading-relaxed">{MOBILE_TIP}</p>
+            <div className="min-w-0 flex-1">
+              <p className="mb-1.5">
+                <AiConciergeTipHeading variant="onLight" />
+              </p>
+              <p className="text-sm leading-relaxed text-gray-600">{MOBILE_TIP}</p>
+            </div>
           </div>
 
           {/* Flight Preview 이미지 */}
@@ -442,9 +449,11 @@ function TripNewStep3Page() {
           <button
             type="button"
             disabled={!isValid}
-            onClick={() => navigate('/trips/new/step4', {
-              state: { destination: flightInfo.departure?.arrival || null }
-            })}
+            onClick={() => {
+              const navState = { destination: flightInfo.departure?.arrival || null }
+              saveStep4NavigationState(navState)
+              navigate('/trips/new/step4', { state: navState })
+            }}
             className={`w-full flex items-center justify-center gap-2 font-bold text-base py-4 rounded-2xl transition-all shadow-sm ${
               isValid
                 ? 'bg-teal-700 hover:bg-teal-800 text-white cursor-pointer'
