@@ -1,15 +1,28 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { CATEGORIES, MOCK_ITEMS, TRIP_SEARCH_CONTEXT } from '@/mocks/searchData'
 import { saveItemForTrip, loadSavedItems } from '@/utils/savedTripItems'
 import { buildTripWindowLabelFromRange } from '@/utils/tripDateFormat'
-import { appendGuideArchiveEntry } from '@/utils/guideArchiveStorage'
+import { appendGuideArchiveEntry, getGuideArchiveEntry, patchGuideArchiveEntry } from '@/utils/guideArchiveStorage'
+import { loadEntryChecklistChecks, saveEntryChecklistChecks } from '@/utils/guideArchiveEntryChecklistStorage'
 import { loadActiveTripPlan } from '@/utils/tripPlanContextStorage'
 import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 import aiSparklesImg from '@/assets/ai-sparkles.png'
 
 const trackEvent = (eventName, properties = {}) => {
   console.debug('[Event]', eventName, properties)
+}
+
+/** 가이드 보관함 entry.items에 넣는 형태로 변환 */
+function mapMockItemToArchiveItem(i) {
+  return {
+    id: i.id,
+    category: i.category,
+    categoryLabel: i.categoryLabel,
+    title: i.title,
+    description: i.description,
+    detail: i.detail,
+  }
 }
 
 /** PNG를 마스크로 써서 버튼·섹션 제목에 맞는 단색으로 표시 */
@@ -35,6 +48,22 @@ function AiSparkleMaskIcon({ selected, className = 'h-3.5 w-3.5' }) {
 
 function TripSearchInner({ tripId }) {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const archiveEntryIdRaw = searchParams.get('archiveEntry')
+  const archiveEntryId =
+    archiveEntryIdRaw && String(archiveEntryIdRaw).trim() ? String(archiveEntryIdRaw).trim() : null
+
+  const archiveEntry = useMemo(
+    () => (archiveEntryId ? getGuideArchiveEntry(tripId, archiveEntryId) : null),
+    [tripId, archiveEntryId],
+  )
+  const mergeToArchive = Boolean(archiveEntryId && archiveEntry)
+  const archiveTargetMissing = Boolean(archiveEntryId && !archiveEntry)
+  const existingArchiveItemIds = useMemo(
+    () => new Set((mergeToArchive ? archiveEntry.items ?? [] : []).map((i) => String(i.id))),
+    [mergeToArchive, archiveEntry],
+  )
+
   const searchStartRef = useRef(0)
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [savedIds, setSavedIds] = useState(() => new Set(loadSavedItems(tripId).map((x) => String(x.id))))
@@ -46,8 +75,13 @@ function TripSearchInner({ tripId }) {
   useEffect(() => {
     const t = Date.now()
     searchStartRef.current = t
-    trackEvent('search_start', { trip_id: tripId, timestamp: t })
-  }, [tripId])
+    trackEvent('search_start', {
+      trip_id: tripId,
+      timestamp: t,
+      merge_to_archive: mergeToArchive,
+      archive_entry_id: archiveEntryId ?? undefined,
+    })
+  }, [tripId, mergeToArchive, archiveEntryId])
 
   const handleCategoryChange = (category) => {
     if (selectedCategory !== 'all' && category !== selectedCategory) {
@@ -62,6 +96,7 @@ function TripSearchInner({ tripId }) {
 
   const toggleItemSelect = (item) => {
     const id = String(item.id)
+    if (existingArchiveItemIds.has(id)) return
     setSelectedForSave((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
@@ -83,11 +118,71 @@ function TripSearchInner({ tripId }) {
 
   const closeSaveConfirmModal = () => setSaveConfirmModalOpen(false)
 
-  /** 확인 모달에서만 실행: 체크리스트 저장 + 가이드 보관함 스냅샷 후 이동 */
+  /** 확인 모달에서만 실행: 체크리스트 저장 + 가이드 보관함 스냅샷 후 이동 (또는 기존 엔트리에 항목 병합) */
   const handleConfirmSaveAndGoArchive = () => {
     const itemsToSave = MOCK_ITEMS.filter((i) => selectedForSave.has(String(i.id)))
     if (itemsToSave.length === 0) {
       closeSaveConfirmModal()
+      return
+    }
+
+    if (mergeToArchive) {
+      const existing = archiveEntry.items ?? []
+      const existingIds = new Set(existing.map((i) => String(i.id)))
+      const additions = itemsToSave.filter((i) => !existingIds.has(String(i.id))).map(mapMockItemToArchiveItem)
+      if (additions.length === 0) {
+        closeSaveConfirmModal()
+        return
+      }
+      const merged = [...existing, ...additions]
+      patchGuideArchiveEntry(tripId, archiveEntryId, { items: merged })
+
+      const prevChecks = loadEntryChecklistChecks(tripId, archiveEntryId)
+      const mergedChecks = { ...prevChecks }
+      for (const it of additions) {
+        mergedChecks[String(it.id)] = false
+      }
+      saveEntryChecklistChecks(tripId, archiveEntryId, mergedChecks)
+
+      additions.forEach((item) => {
+        if (savedIds.has(String(item.id))) return
+        saveItemForTrip(tripId, {
+          id: item.id,
+          category: item.category,
+          title: item.title,
+          subtitle: item.detail || item.description || '',
+        })
+        trackEvent('save_complete', {
+          trip_id: tripId,
+          item_id: item.id,
+          item_category: item.category,
+          mode: 'guide_archive_merge',
+          archive_entry_id: archiveEntryId,
+          elapsed_ms: searchStartRef.current ? Date.now() - searchStartRef.current : null,
+        })
+      })
+
+      setSavedIds((prev) => {
+        const next = new Set(prev)
+        additions.forEach((i) => next.add(String(i.id)))
+        return next
+      })
+
+      trackEvent('save_confirm_navigate_guide_archive_merge', {
+        trip_id: tripId,
+        archive_entry_id: archiveEntryId,
+        added_count: additions.length,
+      })
+
+      window.dispatchEvent(
+        new CustomEvent('guide-archive-checklist-saved', {
+          detail: { tripId: String(tripId), entryId: String(archiveEntryId), progress: undefined },
+        }),
+      )
+
+      closeSaveConfirmModal()
+      setSelectedForSave(new Set())
+      navigate(`/trips/${tripId}/guide-archive/${archiveEntryId}`)
       return
     }
 
@@ -119,7 +214,7 @@ function TripSearchInner({ tripId }) {
     const te = plan?.tripEndDate
     const fromDestination = Boolean(dest && ts && te)
 
-    appendGuideArchiveEntry(tripId, {
+    const nextArchiveList = appendGuideArchiveEntry(tripId, {
       pageTitle: fromDestination
         ? `${dest.country} · ${dest.city} 여행 준비`
         : TRIP_SEARCH_CONTEXT.title,
@@ -147,6 +242,11 @@ function TripSearchInner({ tripId }) {
       dailySummaries: [],
       dailyGuidesFull: [],
     })
+    const newArchiveEntry = nextArchiveList[0]
+    if (newArchiveEntry?.id) {
+      const checksInit = Object.fromEntries((newArchiveEntry.items ?? []).map((it) => [String(it.id), false]))
+      saveEntryChecklistChecks(tripId, newArchiveEntry.id, checksInit)
+    }
 
     trackEvent('save_confirm_navigate_guide_archive', {
       trip_id: tripId,
@@ -161,6 +261,10 @@ function TripSearchInner({ tripId }) {
 
   const handleLeaveWithoutSave = () => {
     setLeaveModalOpen(false)
+    if (mergeToArchive && archiveEntryId) {
+      navigate(`/trips/${tripId}/guide-archive/${archiveEntryId}`)
+      return
+    }
     navigate('/')
   }
 
@@ -212,6 +316,17 @@ function TripSearchInner({ tripId }) {
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 leading-tight">
             {TRIP_SEARCH_CONTEXT.title}
           </h1>
+          {mergeToArchive ? (
+            <p className="mt-4 rounded-xl border border-teal-200 bg-teal-50/90 px-4 py-3 text-sm leading-relaxed text-teal-950">
+              <strong className="font-bold">이 체크리스트에 더 담기</strong> — 아래는 검색과 동일한 전체 결과입니다. 이미
+              이 목록에 들어 있는 항목은 선택할 수 없고, <strong>새로 고른 항목만</strong> 추가 시 목록에 반영됩니다.
+            </p>
+          ) : null}
+          {archiveTargetMissing ? (
+            <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">
+              연결된 체크리스트를 찾을 수 없어 일반 검색으로 표시합니다. 보관함에서 다시 들어와 주세요.
+            </p>
+          ) : null}
         </div>
 
         {/* 카테고리별 필수품 */}
@@ -248,7 +363,8 @@ function TripSearchInner({ tripId }) {
             총 검색 결과 : <span className="tabular-nums">{MOCK_ITEMS.length}</span>개
           </p>
           <p className="mb-5 text-sm text-gray-600">
-            체크리스트에 넣을 항목을 눌러 선택한 뒤, 하단 <strong className="text-gray-800">저장</strong>을 누르세요.
+            체크리스트에 넣을 항목을 눌러 선택한 뒤, 하단{' '}
+            <strong className="text-gray-800">{mergeToArchive ? '추가' : '저장'}</strong>을 누르세요.
           </p>
 
           {selectedCategory === 'all' ? (
@@ -273,6 +389,7 @@ function TripSearchInner({ tripId }) {
                         key={item.id}
                         item={item}
                         selected={selectedForSave.has(String(item.id))}
+                        inArchiveAlready={existingArchiveItemIds.has(String(item.id))}
                         onToggle={() => toggleItemSelect(item)}
                       />
                     ))}
@@ -288,6 +405,7 @@ function TripSearchInner({ tripId }) {
                     key={item.id}
                     item={item}
                     selected={selectedForSave.has(String(item.id))}
+                    inArchiveAlready={existingArchiveItemIds.has(String(item.id))}
                     onToggle={() => toggleItemSelect(item)}
                   />
                 ))}
@@ -310,14 +428,14 @@ function TripSearchInner({ tripId }) {
               disabled={selectedForSave.size === 0}
               className="min-h-12 flex-1 rounded-2xl bg-teal-700 px-4 py-3.5 text-sm font-bold text-white shadow-md transition-colors hover:bg-teal-800 disabled:pointer-events-none disabled:opacity-40 sm:flex-none sm:min-w-[7.5rem] sm:px-8"
             >
-              저장
+              {mergeToArchive ? '추가' : '저장'}
             </button>
             <button
               type="button"
               onClick={openHomeConfirmModal}
               className="min-h-12 flex-1 rounded-2xl border-2 border-gray-300 bg-white px-4 py-3.5 text-sm font-bold text-gray-800 transition-colors hover:bg-gray-50 sm:flex-none sm:min-w-[7.5rem] sm:px-8"
             >
-              홈으로
+              {mergeToArchive ? '뒤로 가기' : '홈으로'}
             </button>
             </div>
           </div>
@@ -342,22 +460,24 @@ function TripSearchInner({ tripId }) {
               id="save-checklist-modal-title"
               className="text-center text-sm font-semibold text-gray-900 leading-relaxed mb-8"
             >
-              정말 저장하시겠습니까? 저장 후 체크리스트로 이동 버튼을 클릭하면 되돌릴 수 없습니다.
+              {mergeToArchive
+                ? '선택한 항목을 이 체크리스트에 추가합니다. 확인 시 해당 체크리스트 화면으로 돌아갑니다.'
+                : '정말 저장하시겠습니까? 확인 시 가이드 보관함으로 이동하며, 되돌릴 수 없습니다.'}
             </p>
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
-              <button
-                type="button"
-                onClick={closeSaveConfirmModal}
-                className="min-h-12 flex-1 rounded-xl border-2 border-teal-600 bg-white py-3 text-sm font-bold text-teal-800 transition-colors hover:bg-teal-50"
-              >
-                뒤로 가기
-              </button>
               <button
                 type="button"
                 onClick={handleConfirmSaveAndGoArchive}
                 className="min-h-12 flex-1 rounded-xl bg-teal-700 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-800"
               >
-                저장 후 체크리스트로 이동
+                확인
+              </button>
+              <button
+                type="button"
+                onClick={closeSaveConfirmModal}
+                className="min-h-12 flex-1 rounded-xl border-2 border-teal-600 bg-white py-3 text-sm font-bold text-teal-800 transition-colors hover:bg-teal-50"
+              >
+                취소
               </button>
             </div>
           </div>
@@ -404,8 +524,46 @@ function TripSearchInner({ tripId }) {
   )
 }
 
-function SearchResultItem({ item, selected, onToggle, className = '' }) {
+function SearchResultItem({ item, selected, onToggle, inArchiveAlready = false, className = '' }) {
   const subtitleText = item.description || item.detail || ''
+
+  if (inArchiveAlready) {
+    return (
+      <div
+        className={`w-full rounded-xl border border-teal-100 bg-teal-50/50 p-4 text-left ${className}`.trim()}
+        role="group"
+        aria-label="이미 이 체크리스트에 담긴 항목"
+      >
+        <div className="flex gap-3">
+          <span
+            className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 border-teal-300 bg-teal-100"
+            aria-hidden
+          >
+            <svg className="h-3 w-3 text-teal-700" viewBox="0 0 12 12" fill="none" aria-hidden>
+              <path
+                d="M2.5 6.2 5 8.7 9.5 3.3"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="flex flex-wrap items-center gap-2">
+              <span className="text-[15px] font-bold leading-snug text-teal-950">{item.title}</span>
+              <span className="rounded-full bg-teal-200/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-teal-900">
+                담김
+              </span>
+            </p>
+            {subtitleText ? (
+              <p className="mt-1.5 text-sm leading-relaxed text-teal-900/70">{subtitleText}</p>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <button
@@ -448,8 +606,8 @@ function SearchResultItem({ item, selected, onToggle, className = '' }) {
 
 function TripSearchPage() {
   const { id } = useParams()
-  const location = useLocation()
-  return <TripSearchInner key={`${id}-${location.key}`} tripId={id} />
+  const [searchParams] = useSearchParams()
+  return <TripSearchInner key={`${id}-${searchParams.toString()}`} tripId={id} />
 }
 
 export default TripSearchPage

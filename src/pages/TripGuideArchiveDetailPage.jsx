@@ -64,7 +64,7 @@ function TripGuideArchiveDetailInner({ tripId, entryId }) {
           onClick={() => navigate(`/trips/${tripId}/guide-archive`)}
           className="text-sm text-teal-700 hover:text-teal-900 font-medium"
         >
-          ← 리스트 보관함
+          ← 나의 체크리스트로
         </button>
         <span className="text-gray-300">|</span>
         <button

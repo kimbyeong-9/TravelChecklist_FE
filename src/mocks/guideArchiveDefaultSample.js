@@ -20,6 +20,9 @@ function toArchiveItem(i) {
 /**
  * 보관함에 기본 샘플이 없으면 1건 추가합니다. (체크리스트 항목은 미체크 = 0%)
  * 예시 데모가 쓰는 MOCK id(0~11번)와 겹치지 않게 12~15번 항목을 사용합니다.
+ *
+ * TripGuideArchivePage에서는 자동 호출하지 않습니다. (검색에서 저장한 스냅샷만 목록에 쌓이게 하기 위함)
+ * 데모·로컬 시드가 필요하면 이 함수를 원하는 시점에 직접 호출하세요.
  */
 export function ensureDefaultGuideArchiveSample(tripId) {
   if (tripId == null) return

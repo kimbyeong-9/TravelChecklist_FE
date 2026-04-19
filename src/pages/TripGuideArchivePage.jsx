@@ -7,7 +7,6 @@ import {
   seedGuideArchiveDesignDemos,
   toggleGuideArchiveDesignDemos,
 } from '@/mocks/guideArchiveDesignDemos'
-import { ensureDefaultGuideArchiveSample } from '@/mocks/guideArchiveDefaultSample'
 import { TripFlowMobileBar } from '@/components/common/TripFlowTopBar'
 import { buildGuideArchiveDateLine, buildGuideArchiveListTitle } from '@/utils/guideArchivePresentation'
 import { loadEntryChecklistChecks } from '@/utils/guideArchiveEntryChecklistStorage'
@@ -107,7 +106,6 @@ function TripGuideArchiveInner({ tripId }) {
   }, [])
 
   useEffect(() => {
-    ensureDefaultGuideArchiveSample(tripId)
     refreshFromStorage()
   }, [tripId, location.key, refreshFromStorage])
 
@@ -272,12 +270,6 @@ function TripGuideArchiveInner({ tripId }) {
             )}
           </div>
         </div>
-        <Link
-          to="/"
-          className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-teal-700 hover:text-teal-900"
-        >
-          홈으로
-        </Link>
       </div>
 
       {/* 탭 (모바일·웹 공통, 스타일만 반응형) */}
@@ -378,7 +370,15 @@ function TripGuideArchiveInner({ tripId }) {
 
               const shellClass = `block w-full overflow-hidden md:rounded-xl md:border md:border-slate-100 md:bg-white md:p-0 md:shadow-sm ${mobileTint} rounded-3xl md:bg-white ${
                 deleteMode && isSelected ? 'ring-2 ring-teal-500 ring-offset-2' : ''
-              } ${isDemo ? 'cursor-default' : !deleteMode ? 'transition-shadow md:hover:border-sky-200 md:hover:shadow-md' : 'cursor-default'}`
+              } ${
+                isDemo
+                  ? deleteMode
+                    ? 'cursor-pointer'
+                    : 'cursor-default'
+                  : deleteMode
+                    ? 'cursor-pointer'
+                    : 'transition-shadow md:hover:border-sky-200 md:hover:shadow-md'
+              }`
 
               const cardInner = (
                 <>
@@ -439,7 +439,22 @@ function TripGuideArchiveInner({ tripId }) {
                     {cardInner}
                   </div>
                 ) : deleteMode ? (
-                  <div className={shellClass}>{cardInner}</div>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
+                    aria-label={`${title} ${isSelected ? '선택됨' : '선택 안 됨'}. 클릭하면 선택이 바뀝니다.`}
+                    onClick={() => toggleEntrySelect(entry.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault()
+                        toggleEntrySelect(entry.id)
+                      }
+                    }}
+                    className={shellClass}
+                  >
+                    {cardInner}
+                  </div>
                 ) : (
                   <Link to={`/trips/${tripId}/guide-archive/${entry.id}`} className={`group ${shellClass}`}>
                     {cardInner}

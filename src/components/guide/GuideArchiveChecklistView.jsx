@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { loadSavedItems, setSavedItemChecked } from '@/utils/savedTripItems'
 import { patchGuideArchiveEntry } from '@/utils/guideArchiveStorage'
@@ -15,8 +15,7 @@ import {
  */
 export default function GuideArchiveChecklistView({ tripId, entry }) {
   const navigate = useNavigate()
-  const toastTimerRef = useRef(null)
-  const [showSaveToast, setShowSaveToast] = useState(false)
+  const [saveConfirmOpen, setSaveConfirmOpen] = useState(false)
   const items = entry.items ?? []
   const [checks, setChecks] = useState(() => loadEntryChecklistChecks(tripId, entry.id))
 
@@ -50,7 +49,7 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
     [checks, tripId, entry.id],
   )
 
-  const handleSave = useCallback(() => {
+  const performSave = useCallback(() => {
     patchGuideArchiveEntry(tripId, entry.id, {
       checklistProgressPercent: progress,
       checklistSavedAt: new Date().toISOString(),
@@ -60,20 +59,22 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
         detail: { tripId: String(tripId), entryId: String(entry.id), progress },
       }),
     )
-    setShowSaveToast(true)
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
-    toastTimerRef.current = window.setTimeout(() => setShowSaveToast(false), 2800)
-  }, [tripId, entry.id, progress])
+    setSaveConfirmOpen(false)
+    navigate(`/trips/${tripId}/guide-archive`)
+  }, [tripId, entry.id, progress, navigate])
 
   const handleBack = useCallback(() => {
     navigate(-1)
   }, [navigate])
 
   useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    if (!saveConfirmOpen) return
+    const onKey = (e) => {
+      if (e.key === 'Escape') setSaveConfirmOpen(false)
     }
-  }, [])
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [saveConfirmOpen])
 
   const title = buildGuideArchiveListTitle(entry)
   const dateLine = buildGuideArchiveDateLine(entry)
@@ -92,7 +93,7 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
         </button>
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => setSaveConfirmOpen(true)}
           className="min-w-0 flex-1 basis-0 rounded-xl bg-teal-700 px-4 py-3.5 text-sm font-bold text-white shadow-sm transition-colors hover:bg-teal-800"
         >
           저장
@@ -101,20 +102,46 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
     </div>
   )
 
-  const toast = showSaveToast ? (
+  const saveConfirmModal = saveConfirmOpen ? (
     <div
-      className="fixed left-1/2 top-[max(1rem,env(safe-area-inset-top))] z-[70] -translate-x-1/2 rounded-full bg-slate-900/92 px-5 py-2.5 text-sm font-semibold text-white shadow-lg"
-      role="status"
-      aria-live="polite"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 p-4"
+      role="presentation"
+      onClick={() => setSaveConfirmOpen(false)}
     >
-      저장되었습니다
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="guide-archive-save-confirm-title"
+        className="relative w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="guide-archive-save-confirm-title" className="mb-8 text-center text-base font-bold leading-snug text-slate-900">
+          저장하시겠습니까?
+        </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-3">
+          <button
+            type="button"
+            onClick={performSave}
+            className="min-h-12 flex-1 rounded-xl bg-teal-700 py-3 text-sm font-bold text-white transition-colors hover:bg-teal-800"
+          >
+            확인
+          </button>
+          <button
+            type="button"
+            onClick={() => setSaveConfirmOpen(false)}
+            className="min-h-12 flex-1 rounded-xl border-2 border-teal-600 bg-white py-3 text-sm font-bold text-teal-800 transition-colors hover:bg-teal-50"
+          >
+            취소
+          </button>
+        </div>
+      </div>
     </div>
   ) : null
 
   if (total === 0) {
     return (
       <>
-        {toast}
+        {saveConfirmModal}
         <div className="mx-auto max-w-2xl px-4 pb-36 pt-10 text-center md:pb-28">
           <p className="text-lg font-bold text-slate-900">담긴 준비물이 없습니다</p>
           <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -134,7 +161,7 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
 
   return (
     <>
-      {toast}
+      {saveConfirmModal}
       <div className="mx-auto max-w-3xl px-4 pb-36 pt-4 md:pb-28 md:pt-6">
       <header className="mb-6">
         <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-teal-800/90">체크리스트 상세</p>
@@ -144,8 +171,7 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
           {dateLine}
         </p>
         <p className="mt-4 text-sm leading-relaxed text-slate-600">
-          검색에서 골라 저장한 필수품을 빠짐없이 챙기세요. 체크한 내용은 이 목록에만 반영되며, 목록 화면의 진행률과
-          연동됩니다.
+          골라 저장한 체크리스트로 필수품을 빠짐없이 챙겨보세요!
         </p>
       </header>
 
@@ -178,16 +204,16 @@ export default function GuideArchiveChecklistView({ tripId, entry }) {
 
       <div className="mb-6 flex flex-wrap gap-2">
         <Link
-          to={`/trips/${tripId}/search`}
+          to={`/trips/${tripId}/search?archiveEntry=${encodeURIComponent(entry.id)}`}
           className="inline-flex items-center rounded-xl border border-teal-200 bg-teal-50 px-4 py-2.5 text-sm font-bold text-teal-900 transition-colors hover:bg-teal-100"
         >
           준비물 더 검색·담기
         </Link>
         <Link
           to={`/trips/${tripId}/checklist`}
-          className="inline-flex items-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+          className="inline-flex items-center rounded-xl border-2 border-fuchsia-400 bg-gradient-to-br from-violet-600 via-fuchsia-600 to-orange-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-fuchsia-500/35 ring-2 ring-white/40 transition hover:brightness-110 active:scale-[0.98]"
         >
-          통합 체크리스트 보기
+          이전 화면 UI 보기
         </Link>
       </div>
 
